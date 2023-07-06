@@ -12,6 +12,8 @@ import com.cursoprogramacao.course.repositories.UserRepository;
 import com.cursoprogramacao.course.services.exceptions.DatabaseException;
 import com.cursoprogramacao.course.services.exceptions.ResourceNotFoundException;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Service
 public class UserService {
 
@@ -21,32 +23,36 @@ public class UserService {
 	public List<User> findAll() {
 		return repository.findAll();
 	}
-	
+
 	public User findById(Long id) {
 		Optional<User> obj = repository.findById(id);
 		return obj.orElseThrow(() -> new ResourceNotFoundException(id));
 	}
-	
+
 	public User insert(User obj) {
 		return repository.save(obj);
 	}
-	
+
 	public void delete(Long id) {
-	    try {
-	        if (repository.existsById(id)) {
-	            repository.deleteById(id);			
-	        } else {				
-	            throw new ResourceNotFoundException(id);			
-	        }		
-	    } catch (DataIntegrityViolationException e) {			
-	        throw new DatabaseException(e.getMessage());		
-	    }	
-	} 
-	
+		try {
+			if (repository.existsById(id)) {
+				repository.deleteById(id);
+			} else {
+				throw new ResourceNotFoundException(id);
+			}
+		} catch (DataIntegrityViolationException e) {
+			throw new DatabaseException(e.getMessage());
+		}
+	}
+
 	public User update(Long id, User obj) {
+		try {
 		User entity = repository.getReferenceById(id);
 		updateData(entity, obj);
 		return repository.save(entity);		
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException(id);
+		}
 	}
 
 	private void updateData(User entity, User obj) {
